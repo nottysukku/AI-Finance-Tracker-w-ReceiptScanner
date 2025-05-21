@@ -85,15 +85,16 @@ Easily browse through transactions with **pagination** and **smart filters** (re
 
 ```bash
 /
+├── actions/               # Next.js 15 Actions Directory
 ├── app/                   # Next.js 15 App Directory
 ├── components/            # Reusable React components
+├── data/                  # Data Folder
+├── emails/                # Emails Folder
+├── hooks/                 # Hooks Folder
 ├── lib/                   # Utility functions (e.g., API wrappers, helpers)
 ├── prisma/                # Prisma schema and DB setup
 ├── public/                # Static files
-├── styles/                # Global and module CSS (Tailwind)
-├── pages/                 # API routes and fallback
-├── inngest/               # Background jobs and scheduling
-└── types/                 # TypeScript types and interfaces
+├── ...                    # Other Relevant files
 ```
 
 ---
@@ -103,14 +104,14 @@ Easily browse through transactions with **pagination** and **smart filters** (re
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/money-finance-app.git
-cd money-finance-app
+git clone https://github.com/nottysukku/AI-Finance-Tracker-w-ReceiptScanner.git
+cd AI-Finance-Tracker-w-ReceiptScanner
 ```
 
 ### 2. Install dependencies
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 # or
 yarn install
 ```
@@ -120,13 +121,21 @@ yarn install
 Create a `.env.local` file based on `.env.example` and configure your API keys and credentials:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
 DATABASE_URL=
+DIRECT_URL=
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/onboarding
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+
 GEMINI_API_KEY=
+
 RESEND_API_KEY=
+
+ARCJET_KEY=
 ...
 ```
 
