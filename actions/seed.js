@@ -3,9 +3,6 @@
 import { db } from "@/lib/prisma";
 import { subDays } from "date-fns";
 
-const ACCOUNT_ID = "account-id";
-const USER_ID = "user-id";
-
 // Categories with their typical amount ranges
 const CATEGORIES = {
   INCOME: [
@@ -41,7 +38,74 @@ function getRandomCategory(type) {
   return { category: category.name, amount };
 }
 
+// Seed transactions for a specific user and account
+export async function seedUserData(userId, accountId) {
+  try {
+    // Generate 30 days of demo transactions (shorter for new users)
+    const transactions = [];
+    let totalBalance = 0;
+
+    for (let i = 30; i >= 0; i--) {
+      const date = subDays(new Date(), i);
+
+      // Generate 1-2 transactions per day
+      const transactionsPerDay = Math.floor(Math.random() * 2) + 1;
+
+      for (let j = 0; j < transactionsPerDay; j++) {
+        // 40% chance of income, 60% chance of expense
+        const type = Math.random() < 0.4 ? "INCOME" : "EXPENSE";
+        const { category, amount } = getRandomCategory(type);
+
+        const transaction = {
+          id: crypto.randomUUID(),
+          type,
+          amount,
+          description: `${
+            type === "INCOME" ? "Received" : "Paid for"
+          } ${category}`,
+          date,
+          category,
+          status: "COMPLETED",
+          userId: userId,
+          accountId: accountId,
+          createdAt: date,
+          updatedAt: date,
+        };
+
+        totalBalance += type === "INCOME" ? amount : -amount;
+        transactions.push(transaction);
+      }
+    }
+
+    // Insert transactions and update account balance
+    await db.$transaction(async (tx) => {
+      // Insert demo transactions
+      await tx.transaction.createMany({
+        data: transactions,
+      });
+
+      // Update account balance
+      await tx.account.update({
+        where: { id: accountId },
+        data: { balance: Math.max(totalBalance, 1000) }, // Ensure minimum balance of 1000
+      });
+    });
+
+    return {
+      success: true,
+      message: `Created ${transactions.length} demo transactions`,
+    };
+  } catch (error) {
+    console.error("Error seeding user data:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Original seed function for manual testing (kept for compatibility)
 export async function seedTransactions() {
+  const ACCOUNT_ID = "account-id";
+  const USER_ID = "user-id";
+  
   try {
     // Generate 90 days of transactions
     const transactions = [];
@@ -68,8 +132,8 @@ export async function seedTransactions() {
           date,
           category,
           status: "COMPLETED",
-          userId: USER_ID,
-          accountId: ACCOUNT_ID,
+          userId: "user-id", // hardcoded for manual testing
+          accountId: "account-id", // hardcoded for manual testing
           createdAt: date,
           updatedAt: date,
         };
@@ -83,7 +147,7 @@ export async function seedTransactions() {
     await db.$transaction(async (tx) => {
       // Clear existing transactions
       await tx.transaction.deleteMany({
-        where: { accountId: ACCOUNT_ID },
+        where: { accountId: "account-id" },
       });
 
       // Insert new transactions
@@ -93,7 +157,7 @@ export async function seedTransactions() {
 
       // Update account balance
       await tx.account.update({
-        where: { id: ACCOUNT_ID },
+        where: { id: "account-id" },
         data: { balance: totalBalance },
       });
     });
