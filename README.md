@@ -114,6 +114,7 @@ cd AI-Finance-Tracker-w-ReceiptScanner
 npm install --legacy-peer-deps
 # or
 yarn install
+
 ```
 
 ### 3. Setup environment variables
@@ -139,6 +140,12 @@ ARCJET_KEY=
 ...
 ```
 
+### 3.5.  Add Tables to Supabase via Prisma
+
+```bash
+npx prisma migrate dev --name create-models 
+
+```
 ### 4. Run the development server
 
 ```bash
@@ -178,11 +185,5 @@ Feel free to reach out or open a discussion!
 
 If you found this project helpful or interesting, please give it a ⭐️ on GitHub and share it with others!
 
----
 
-## 📜 License
-
-[MIT License](LICENSE)
-
----
 

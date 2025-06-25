@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Money",
+  title: "Money | An AI-powered financial management platform",
   description: "One stop Finance Platform",
 };
 

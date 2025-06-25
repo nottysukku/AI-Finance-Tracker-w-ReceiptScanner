@@ -9,7 +9,7 @@ export const accountSchema = z.object({
 
 export const transactionSchema = z
   .object({
-    type: z.enum(["INCOME", "EXPENSE"]),
+    type: z.enum(["INCOME", "EXPENSE"]), 
     amount: z.string().min(1, "Amount is required"),
     description: z.string().optional(),
     date: z.date({ required_error: "Date is required" }),
@@ -18,7 +18,7 @@ export const transactionSchema = z
     isRecurring: z.boolean().default(false),
     recurringInterval: z
       .enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"])
-      .optional(),
+      .optional(), 
   })
   .superRefine((data, ctx) => {
     if (data.isRecurring && !data.recurringInterval) {
