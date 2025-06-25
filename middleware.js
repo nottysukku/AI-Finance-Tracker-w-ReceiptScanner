@@ -37,7 +37,7 @@ const clerk = clerkMiddleware(async (auth, req) => {
 
   if (!userId && isProtectedRoute(req)) {
     // Check for guest session before redirecting to sign-in
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const guestSession = cookieStore.get(GUEST_SESSION_COOKIE)?.value;
     
     if (!guestSession) {

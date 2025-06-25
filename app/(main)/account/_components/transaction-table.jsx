@@ -168,19 +168,30 @@ export function TransactionTable({ transactions }) {
   } = useFetch(bulkDeleteTransactions);
 
   const handleBulkDelete = async () => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selectedIds.length} transactions?`
-      )
-    )
-      return;
-
-    deleteFn(selectedIds);
+    toast(
+      `Delete ${selectedIds.length} transaction${selectedIds.length > 1 ? 's' : ''}?`,
+      {
+        description: "This action cannot be undone.",
+        action: {
+          label: "Delete",
+          onClick: () => {
+            deleteFn(selectedIds);
+          },
+        },
+        cancel: {
+          label: "Cancel",
+          onClick: () => {
+            // Do nothing on cancel
+          },
+        },
+      }
+    );
   };
 
   useEffect(() => {
     if (deleted && !deleteLoading) {
-      toast.error("Transactions deleted successfully");
+      toast.success("Transactions deleted successfully");
+      setSelectedIds([]); // Clear selections after successful delete
     }
   }, [deleted, deleteLoading]);
 
