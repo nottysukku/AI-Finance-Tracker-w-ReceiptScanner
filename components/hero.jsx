@@ -43,9 +43,16 @@ const HeroSection = () => {
             </Button>
           </Link>
           <Link href="https://www.github.com/nottysukku" target="_blank">
-          
             <Button size="lg" variant="outline" className="px-8">
               Github
+            </Button>
+          </Link>
+        </div>
+        <div className="flex justify-center mt-4">
+          <p className="text-sm text-gray-600 mr-4">Or</p>
+          <Link href="/sign-in">
+            <Button variant="link" className="p-0 h-auto text-blue-600 underline">
+              try as guest →
             </Button>
           </Link>
         </div>

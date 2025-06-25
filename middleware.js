@@ -1,12 +1,15 @@
 import arcjet, { createMiddleware, detectBot, shield } from "@arcjet/next";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/account(.*)",
   "/transaction(.*)",
 ]);
+
+const GUEST_SESSION_COOKIE = "guest-session";
 
 // Create Arcjet middleware
 const aj = arcjet({
@@ -33,8 +36,14 @@ const clerk = clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
 
   if (!userId && isProtectedRoute(req)) {
-    const { redirectToSignIn } = await auth();
-    return redirectToSignIn();
+    // Check for guest session before redirecting to sign-in
+    const cookieStore = cookies();
+    const guestSession = cookieStore.get(GUEST_SESSION_COOKIE)?.value;
+    
+    if (!guestSession) {
+      const { redirectToSignIn } = await auth();
+      return redirectToSignIn();
+    }
   }
 
   return NextResponse.next();

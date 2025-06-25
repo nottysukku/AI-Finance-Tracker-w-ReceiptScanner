@@ -5,6 +5,7 @@ import { db } from "@/lib/prisma";
 import { request } from "@arcjet/next";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { getUser, isAuthenticated } from "@/lib/auth";
 
 const serializeTransaction = (obj) => {
   const serialized = { ...obj };
@@ -18,16 +19,11 @@ const serializeTransaction = (obj) => {
 };
 
 export async function getUserAccounts() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  const authenticated = await isAuthenticated();
+  if (!authenticated) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
+  const user = await getUser();
+  if (!user) throw new Error("User not found");
 
   try {
     const accounts = await db.account.findMany({
@@ -53,41 +49,40 @@ export async function getUserAccounts() {
 
 export async function createAccount(data) {
   try {
+    const authenticated = await isAuthenticated();
+    if (!authenticated) throw new Error("Unauthorized");
+
+    const user = await getUser();
+    if (!user) throw new Error("User not found");
+
+    // Skip ArcJet rate limiting for guest users
     const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    if (userId) {
+      // Get request data for ArcJet
+      const req = await request();
 
-    // Get request data for ArcJet
-    const req = await request();
+      // Check rate limit
+      const decision = await aj.protect(req, {
+        userId,
+        requested: 1, // Specify how many tokens to consume
+      });
 
-    // Check rate limit
-    const decision = await aj.protect(req, {
-      userId,
-      requested: 1, // Specify how many tokens to consume
-    });
+      if (decision.isDenied()) {
+        if (decision.reason.isRateLimit()) {
+          const { remaining, reset } = decision.reason;
+          console.error({
+            code: "RATE_LIMIT_EXCEEDED",
+            details: {
+              remaining,
+              resetInSeconds: reset,
+            },
+          });
 
-    if (decision.isDenied()) {
-      if (decision.reason.isRateLimit()) {
-        const { remaining, reset } = decision.reason;
-        console.error({
-          code: "RATE_LIMIT_EXCEEDED",
-          details: {
-            remaining,
-            resetInSeconds: reset,
-          },
-        });
+          throw new Error("Too many requests. Please try again later.");
+        }
 
-        throw new Error("Too many requests. Please try again later.");
+        throw new Error("Request blocked");
       }
-
-      throw new Error("Request blocked");
-    }
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      throw new Error("User not found");
     }
 
     // Convert balance to float before saving
@@ -135,16 +130,11 @@ export async function createAccount(data) {
 }
 
 export async function getDashboardData() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  const authenticated = await isAuthenticated();
+  if (!authenticated) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
+  const user = await getUser();
+  if (!user) throw new Error("User not found");
 
   // Get all user transactions
   const transactions = await db.transaction.findMany({

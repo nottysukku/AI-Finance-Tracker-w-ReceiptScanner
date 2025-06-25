@@ -1,14 +1,18 @@
 import React from "react";
 import { Button } from "./ui/button";
-import { PenBox, LayoutDashboard } from "lucide-react";
+import { PenBox, LayoutDashboard, LogOut } from "lucide-react";
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { checkUser } from "@/lib/checkUser";
+import { isCurrentUserGuest } from "@/lib/auth";
+import { isGuestUser } from "@/lib/guest";
 import Image from "next/image";
 import { ThemeToggle } from "./theme-toggle";
+import GuestUserButton from "./guest-user-button";
 
 const Header = async () => {
-  await checkUser();
+  const user = await checkUser();
+  const isGuest = user ? await isGuestUser(user.clerkUserId) : false;
 
   return (
     <header className="fixed top-0 w-full bg-white/80 dark:bg-gray-900/90 backdrop-blur-md z-50 border-b dark:border-gray-800">
@@ -45,37 +49,47 @@ const Header = async () => {
         <div className="flex items-center space-x-4">
           <ThemeToggle />
 
-          <SignedIn>
-            <Link
-              href="/dashboard"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2"
-            >
-              <Button variant="outline">
-                <LayoutDashboard size={18} />
-                <span className="hidden md:inline">Dashboard</span>
-              </Button>
-            </Link>
-            <a href="/transaction/create">
-              <Button className="flex items-center gap-2">
-                <PenBox size={18} />
-                <span className="hidden md:inline">Add Transaction</span>
-              </Button>
-            </a>
-          </SignedIn>
-          <SignedOut>
-            <SignInButton forceRedirectUrl="/dashboard">
-              <Button variant="outline">Login</Button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "w-10 h-10",
-                },
-              }}
-            />
-          </SignedIn>
+          {/* Show different UI for authenticated users (both Clerk and guest) */}
+          {user ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2"
+              >
+                <Button variant="outline">
+                  <LayoutDashboard size={18} />
+                  <span className="hidden md:inline">Dashboard</span>
+                </Button>
+              </Link>
+              <a href="/transaction/create">
+                <Button className="flex items-center gap-2">
+                  <PenBox size={18} />
+                  <span className="hidden md:inline">Add Transaction</span>
+                </Button>
+              </a>
+              
+              {/* Show different user buttons for Clerk vs Guest */}
+              {isGuest ? (
+                <GuestUserButton />
+              ) : (
+                <SignedIn>
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-10 h-10",
+                      },
+                    }}
+                  />
+                </SignedIn>
+              )}
+            </>
+          ) : (
+            <SignedOut>
+              <SignInButton forceRedirectUrl="/dashboard">
+                <Button variant="outline">Login</Button>
+              </SignInButton>
+            </SignedOut>
+          )}
         </div>
       </nav>
     </header>

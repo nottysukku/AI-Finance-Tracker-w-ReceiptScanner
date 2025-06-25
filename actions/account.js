@@ -3,6 +3,7 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { getUser, isAuthenticated } from "@/lib/auth";
 
 const serializeDecimal = (obj) => {
   const serialized = { ...obj };
@@ -16,13 +17,10 @@ const serializeDecimal = (obj) => {
 };
 
 export async function getAccountWithTransactions(accountId) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  const authenticated = await isAuthenticated();
+  if (!authenticated) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
+  const user = await getUser();
   if (!user) throw new Error("User not found");
 
   const account = await db.account.findUnique({
@@ -50,13 +48,10 @@ export async function getAccountWithTransactions(accountId) {
 
 export async function bulkDeleteTransactions(transactionIds) {
   try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const authenticated = await isAuthenticated();
+    if (!authenticated) throw new Error("Unauthorized");
 
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
+    const user = await getUser();
     if (!user) throw new Error("User not found");
 
     // Get transactions to calculate balance changes
@@ -113,16 +108,11 @@ export async function bulkDeleteTransactions(transactionIds) {
 
 export async function updateDefaultAccount(accountId) {
   try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const authenticated = await isAuthenticated();
+    if (!authenticated) throw new Error("Unauthorized");
 
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      throw new Error("User not found");
-    }
+    const user = await getUser();
+    if (!user) throw new Error("User not found");
 
     // First, unset any existing default account
     await db.account.updateMany({
@@ -143,7 +133,7 @@ export async function updateDefaultAccount(accountId) {
     });
 
     revalidatePath("/dashboard");
-    return { success: true, data: serializeTransaction(account) };
+    return { success: true, data: serializeDecimal(account) };
   } catch (error) {
     return { success: false, error: error.message };
   }
