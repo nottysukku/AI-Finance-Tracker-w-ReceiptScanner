@@ -1,10 +1,9 @@
 import React from "react";
 import { Button } from "./ui/button";
-import { PenBox, LayoutDashboard, LogOut } from "lucide-react";
+import { PenBox, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { checkUser } from "@/lib/checkUser";
-import { isCurrentUserGuest } from "@/lib/auth";
 import { isGuestUser } from "@/lib/guest";
 import Image from "next/image";
 import { ThemeToggle } from "./theme-toggle";
@@ -30,18 +29,18 @@ const Header = async () => {
         {/* Navigation Links - Different for signed in/out users */}
         <div className="hidden md:flex items-center space-x-8">
           {/* Always show Features and Testimonials */}
-          <a
+          <Link
             href="/#features"
             className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
           >
             Features
-          </a>
-          <a
+          </Link>
+          <Link
             href="/#testimonials"
             className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
           >
             Testimonials
-          </a>
+          </Link>
         </div>
 
         {/* Action Buttons */}
@@ -60,12 +59,12 @@ const Header = async () => {
                   <span className="hidden md:inline">Dashboard</span>
                 </Button>
               </Link>
-              <a href="/transaction/create">
+              <Link href="/transaction/create">
                 <Button className="flex items-center gap-2">
                   <PenBox size={18} />
                   <span className="hidden md:inline">Add Transaction</span>
                 </Button>
-              </a>
+              </Link>
               
               {/* Show different user buttons for Clerk vs Guest */}
               {isGuest ? (
