@@ -59,7 +59,7 @@ const HeroSection = () => {
         <div className="hero-image-wrapper mt-5 md:mt-0">
           <div ref={imageRef} className="hero-image">
             <Image
-              src="/banner1.png"
+              src="/laptop-lot-money-concept-earning-money-internet-ai-generated_894218-1059.avif"
               width={1280}
               height={720}
               alt="Dashboard Preview"
