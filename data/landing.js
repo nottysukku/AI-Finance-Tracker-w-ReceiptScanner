@@ -87,45 +87,45 @@ export const howItWorksData = [
 
 // Testimonials Data
 export const testimonialsData = [
-  {
+  { 
     name: "Aarav Sharma",
     role: "Small Business Owner",
-    image: "https://randomuser.me/api/portraits/men/51.jpg",
+    image: "/51.png",
     quote:
       "Money has transformed how I manage my business finances. The AI insights have helped me identify cost-saving opportunities I never knew existed.",
   },
   {
     name: "Priya Patel",
     role: "Freelancer",
-    image: "https://randomuser.me/api/portraits/women/52.jpg",
+    image: "/52.png",
     quote:
       "The receipt scanning feature saves me hours each month. Now I can focus on my work instead of manual data entry and expense tracking.",
   },
   {
     name: "Samuel Thomas",
     role: "Financial Advisor",
-    image: "https://randomuser.me/api/portraits/men/53.jpg",
+    image: "/53.png",
     quote:
       "I recommend Money to all my clients. The multi-currency support and detailed analytics make it perfect for international investors.",
   },
   {
     name: "Sneha Iyer",
     role: "Startup Founder",
-    image: "https://randomuser.me/api/portraits/women/54.jpg",
+    image: "/54.png",
     quote:
       "The platform's automated insights have made budgeting so much easier for my team. Highly recommended for Indian startups!",
   },
   {
     name: "David Lee",
     role: "Software Engineer",
-    image: "https://randomuser.me/api/portraits/men/55.jpg",
+    image: "/55.png",
     quote:
       "Managing multiple accounts and currencies is seamless. The user interface is intuitive and perfect for tech professionals.",
   },
   {
     name: "Ananya Desai",
     role: "Chartered Accountant",
-    image: "https://randomuser.me/api/portraits/women/56.jpg",
+    image: "/56.png",
     quote:
       "As a CA, I appreciate the detailed analytics and easy reporting features. It’s a must-have tool for finance professionals in India.",
   },
