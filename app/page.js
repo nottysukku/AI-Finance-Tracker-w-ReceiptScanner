@@ -11,6 +11,9 @@ import {
 import HeroSection from "@/components/hero";
 import Link from "next/link";
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">

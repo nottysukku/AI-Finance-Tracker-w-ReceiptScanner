@@ -17,33 +17,38 @@ const serializeDecimal = (obj) => {
 };
 
 export async function getAccountWithTransactions(accountId) {
-  const authenticated = await isAuthenticated();
-  if (!authenticated) throw new Error("Unauthorized");
+  try {
+    const authenticated = await isAuthenticated();
+    if (!authenticated) return null;
 
-  const user = await getUser();
-  if (!user) throw new Error("User not found");
+    const user = await getUser();
+    if (!user) return null;
 
-  const account = await db.account.findUnique({
-    where: {
-      id: accountId,
-      userId: user.id,
-    },
-    include: {
-      transactions: {
-        orderBy: { date: "desc" },
+    const account = await db.account.findUnique({
+      where: {
+        id: accountId,
+        userId: user.id,
       },
-      _count: {
-        select: { transactions: true },
+      include: {
+        transactions: {
+          orderBy: { date: "desc" },
+        },
+        _count: {
+          select: { transactions: true },
+        },
       },
-    },
-  });
+    });
 
-  if (!account) return null;
+    if (!account) return null;
 
-  return {
-    ...serializeDecimal(account),
-    transactions: account.transactions.map(serializeDecimal),
-  };
+    return {
+      ...serializeDecimal(account),
+      transactions: account.transactions.map(serializeDecimal),
+    };
+  } catch (error) {
+    console.error("Error in getAccountWithTransactions:", error);
+    return null;
+  }
 }
 
 export async function bulkDeleteTransactions(transactionIds) {

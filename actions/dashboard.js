@@ -19,13 +19,13 @@ const serializeTransaction = (obj) => {
 };
 
 export async function getUserAccounts() {
-  const authenticated = await isAuthenticated();
-  if (!authenticated) throw new Error("Unauthorized");
-
-  const user = await getUser();
-  if (!user) throw new Error("User not found");
-
   try {
+    const authenticated = await isAuthenticated();
+    if (!authenticated) return [];
+
+    const user = await getUser();
+    if (!user) return [];
+
     const accounts = await db.account.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
@@ -130,17 +130,22 @@ export async function createAccount(data) {
 }
 
 export async function getDashboardData() {
-  const authenticated = await isAuthenticated();
-  if (!authenticated) throw new Error("Unauthorized");
+  try {
+    const authenticated = await isAuthenticated();
+    if (!authenticated) return [];
 
-  const user = await getUser();
-  if (!user) throw new Error("User not found");
+    const user = await getUser();
+    if (!user) return [];
 
-  // Get all user transactions
-  const transactions = await db.transaction.findMany({
-    where: { userId: user.id },
-    orderBy: { date: "desc" },
-  });
+    // Get all user transactions
+    const transactions = await db.transaction.findMany({
+      where: { userId: user.id },
+      orderBy: { date: "desc" },
+    });
 
-  return transactions.map(serializeTransaction);
+    return transactions.map(serializeTransaction);
+  } catch (error) {
+    console.error("Error in getDashboardData:", error);
+    return [];
+  }
 }

@@ -5,6 +5,9 @@ import { TransactionTable } from "../_components/transaction-table";
 import { notFound } from "next/navigation";
 import { AccountChart } from "../_components/account-chart";
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 export default async function AccountPage({ params }) {
   const { id } = await params;
   const accountData = await getAccountWithTransactions(id);

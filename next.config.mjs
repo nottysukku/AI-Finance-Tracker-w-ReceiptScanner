@@ -14,6 +14,9 @@ const nextConfig = {
       bodySizeLimit: "5mb",
     },
   },
+
+  // Force dynamic rendering for all pages
+  output: 'standalone',
 };
 
 export default nextConfig;

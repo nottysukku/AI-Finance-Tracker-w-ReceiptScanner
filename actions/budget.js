@@ -8,10 +8,10 @@ import { getUser, isAuthenticated } from "@/lib/auth";
 export async function getCurrentBudget(accountId) {
   try {
     const authenticated = await isAuthenticated();
-    if (!authenticated) throw new Error("Unauthorized");
+    if (!authenticated) return null;
 
     const user = await getUser();
-    if (!user) throw new Error("User not found");
+    if (!user) return null;
 
     const budget = await db.budget.findFirst({
       where: {

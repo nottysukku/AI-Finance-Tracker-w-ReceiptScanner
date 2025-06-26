@@ -2,15 +2,29 @@ import { getUserAccounts } from "@/actions/dashboard";
 import { defaultCategories } from "@/data/categories";
 import { AddTransactionForm } from "../_components/transaction-form";
 import { getTransaction } from "@/actions/transaction";
+import { redirect } from "next/navigation";
+
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
 
 export default async function AddTransactionPage({ searchParams }) {
   const accounts = await getUserAccounts();
-  const editId = searchParams?.edit;
+  const editId = (await searchParams)?.edit;
+
+  // If no accounts, redirect to dashboard (this handles build-time issues)
+  if (!accounts || accounts.length === 0) {
+    redirect('/dashboard');
+  }
 
   let initialData = null;
   if (editId) {
-    const transaction = await getTransaction(editId);
-    initialData = transaction;
+    try {
+      const transaction = await getTransaction(editId);
+      initialData = transaction;
+    } catch (error) {
+      console.error("Error fetching transaction:", error);
+      // Continue without initial data if there's an error
+    }
   }
 
   return (

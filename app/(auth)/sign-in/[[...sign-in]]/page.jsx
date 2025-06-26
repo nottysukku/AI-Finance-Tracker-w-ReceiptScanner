@@ -2,6 +2,9 @@ import { SignIn } from "@clerk/nextjs";
 import GuestSignIn from "@/components/guest-signin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 export default function Page() {
   return (
     <div className="flex flex-col items-center justify-center space-y-6">

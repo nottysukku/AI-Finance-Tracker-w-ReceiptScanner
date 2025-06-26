@@ -100,22 +100,27 @@ export async function createTransaction(data) {
 }
 
 export async function getTransaction(id) {
-  const authenticated = await isAuthenticated();
-  if (!authenticated) throw new Error("Unauthorized");
+  try {
+    const authenticated = await isAuthenticated();
+    if (!authenticated) return null;
 
-  const user = await getUser();
-  if (!user) throw new Error("User not found");
+    const user = await getUser();
+    if (!user) return null;
 
-  const transaction = await db.transaction.findUnique({
-    where: {
-      id,
-      userId: user.id,
-    },
-  });
+    const transaction = await db.transaction.findUnique({
+      where: {
+        id,
+        userId: user.id,
+      },
+    });
 
-  if (!transaction) throw new Error("Transaction not found");
+    if (!transaction) return null;
 
-  return serializeAmount(transaction);
+    return serializeAmount(transaction);
+  } catch (error) {
+    console.error("Error in getTransaction:", error);
+    return null;
+  }
 }
 
 export async function updateTransaction(id, data) {

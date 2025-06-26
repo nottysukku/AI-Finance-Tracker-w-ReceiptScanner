@@ -1,8 +1,7 @@
-import DashboardPage from "./page";
 import { BarLoader } from "react-spinners";
 import { Suspense } from "react";
 
-export default function Layout() {
+export default function Layout({ children }) {
   return (
     <div className="px-5">
       <div className="flex items-center justify-between mb-5">
@@ -13,7 +12,7 @@ export default function Layout() {
       <Suspense
         fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}
       >
-        <DashboardPage />
+        {children}
       </Suspense>
     </div>
   );
