@@ -226,9 +226,45 @@ export async function getUserTransactions(query = {}) {
 }
 
 // Scan Receipt
-export async function scanReceipt(file) {
+export async function scanReceipt(formData) {
   try {
+    // Check if Gemini API key is available
+    if (!process.env.GEMINI_API_KEY) {
+      return {
+        success: false,
+        error: "AI receipt scanning is not configured. Please contact the administrator."
+      };
+    }
+
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Get the file from FormData
+    const file = formData.get('file');
+    
+    if (!file) {
+      return {
+        success: false,
+        error: "No file provided"
+      };
+    }
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      return {
+        success: false,
+        error: "Invalid file type. Please upload a JPEG, PNG, or WebP image."
+      };
+    }
+
+    // Validate file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      return {
+        success: false,
+        error: "File too large. Please upload an image smaller than 5MB."
+      };
+    }
 
     // Convert File to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
@@ -237,22 +273,29 @@ export async function scanReceipt(file) {
 
     const prompt = `
       Analyze this receipt image and extract the following information in JSON format:
-      - Total amount (just the number)
-      - Date (in ISO format)
+      - Total amount (just the number, no currency symbols)
+      - Date (in ISO format YYYY-MM-DD)
       - Description or items purchased (brief summary)
       - Merchant/store name
-      - Suggested category (one of: housing,transportation,groceries,utilities,entertainment,food,shopping,healthcare,education,personal,travel,insurance,gifts,bills,other-expense )
+      - Suggested category (one of: housing,transportation,groceries,utilities,entertainment,food,shopping,healthcare,education,personal,travel,insurance,gifts,bills,other-expense)
       
       Only respond with valid JSON in this exact format:
       {
         "amount": number,
-        "date": "ISO date string",
+        "date": "YYYY-MM-DD",
         "description": "string",
         "merchantName": "string",
         "category": "string"
       }
 
-      If its not a recipt, return an empty object
+      If this is not a receipt or you cannot extract the information, return:
+      {
+        "amount": 0,
+        "date": "${new Date().toISOString().split('T')[0]}",
+        "description": "Could not parse receipt",
+        "merchantName": "Unknown",
+        "category": "other-expense"
+      }
     `;
 
     const result = await model.generateContent([
@@ -267,24 +310,52 @@ export async function scanReceipt(file) {
 
     const response = await result.response;
     const text = response.text();
-    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
-
+    
+    // Clean up the response text
+    let cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
+    
+    // Remove any markdown formatting
+    cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+    
+    let data;
     try {
-      const data = JSON.parse(cleanedText);
-      return {
-        amount: parseFloat(data.amount),
-        date: new Date(data.date),
-        description: data.description,
-        category: data.category,
-        merchantName: data.merchantName,
-      };
+      data = JSON.parse(cleanedText);
     } catch (parseError) {
       console.error("Error parsing JSON response:", parseError);
-      throw new Error("Invalid response format from Gemini");
+      console.error("Raw response:", text);
+      // Return fallback data
+      data = {
+        amount: 0,
+        date: new Date().toISOString().split('T')[0],
+        description: "Could not parse receipt",
+        merchantName: "Unknown",
+        category: "other-expense"
+      };
     }
+
+    // Validate and sanitize the parsed data
+    const amount = parseFloat(data.amount) || 0;
+    const date = data.date ? new Date(data.date) : new Date();
+    const description = data.description || "Receipt scan";
+    const category = data.category || "other-expense";
+    const merchantName = data.merchantName || "Unknown";
+
+    return {
+      success: true,
+      data: {
+        amount,
+        date,
+        description,
+        category,
+        merchantName,
+      }
+    };
   } catch (error) {
     console.error("Error scanning receipt:", error);
-    throw new Error("Failed to scan receipt");
+    return {
+      success: false,
+      error: error.message || "Failed to scan receipt. Please try again or enter the details manually."
+    };
   }
 }
 

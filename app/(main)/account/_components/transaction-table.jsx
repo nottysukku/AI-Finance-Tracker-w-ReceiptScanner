@@ -48,6 +48,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { cn } from "@/lib/utils";
 import { categoryColors } from "@/data/categories";
 import { bulkDeleteTransactions } from "@/actions/account";
@@ -74,6 +75,9 @@ export function TransactionTable({ transactions }) {
   const [typeFilter, setTypeFilter] = useState("");
   const [recurringFilter, setRecurringFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showSingleDeleteModal, setShowSingleDeleteModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
   const router = useRouter();
 
   // Memoized filtered and sorted transactions
@@ -167,25 +171,35 @@ export function TransactionTable({ transactions }) {
     data: deleted,
   } = useFetch(bulkDeleteTransactions);
 
-  const handleBulkDelete = async () => {
-    toast(
-      `Delete ${selectedIds.length} transaction${selectedIds.length > 1 ? 's' : ''}?`,
-      {
-        description: "This action cannot be undone.",
-        action: {
-          label: "Delete",
-          onClick: () => {
-            deleteFn(selectedIds);
-          },
-        },
-        cancel: {
-          label: "Cancel",
-          onClick: () => {
-            // Do nothing on cancel
-          },
-        },
-      }
-    );
+  const handleBulkDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setShowDeleteModal(false);
+    await deleteFn(selectedIds);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+
+  const handleSingleDelete = (transactionId) => {
+    setDeleteTargetId(transactionId);
+    setShowSingleDeleteModal(true);
+  };
+
+  const confirmSingleDelete = async () => {
+    setShowSingleDeleteModal(false);
+    if (deleteTargetId) {
+      await deleteFn([deleteTargetId]);
+      setDeleteTargetId(null);
+    }
+  };
+
+  const cancelSingleDelete = () => {
+    setShowSingleDeleteModal(false);
+    setDeleteTargetId(null);
   };
 
   useEffect(() => {
@@ -448,7 +462,7 @@ export function TransactionTable({ transactions }) {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive"
-                          onClick={() => deleteFn([transaction.id])}
+                          onClick={() => handleSingleDelete(transaction.id)}
                         >
                           Delete
                         </DropdownMenuItem>
@@ -486,6 +500,30 @@ export function TransactionTable({ transactions }) {
           </Button>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Transactions"
+        description={`Are you sure you want to delete ${selectedIds.length} transaction${selectedIds.length > 1 ? 's' : ''}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+      />
+
+      {/* Single Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showSingleDeleteModal}
+        onClose={cancelSingleDelete}
+        onConfirm={confirmSingleDelete}
+        title="Delete Transaction"
+        description="Are you sure you want to delete this transaction? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+      />
     </div>
   );
 }

@@ -95,16 +95,16 @@ export function AddTransactionForm({
   };
 
   const handleScanComplete = (scannedData) => {
-    if (scannedData) {
+    if (scannedData && scannedData.amount > 0) {
       setValue("amount", scannedData.amount.toString());
       setValue("date", new Date(scannedData.date));
-      if (scannedData.description) {
+      if (scannedData.description && scannedData.description !== "Could not parse receipt") {
         setValue("description", scannedData.description);
       }
-      if (scannedData.category) {
+      if (scannedData.category && scannedData.category !== "other-expense") {
         setValue("category", scannedData.category);
       }
-      toast.success("Receipt scanned successfully");
+      // Don't show toast here as it's already shown in the scanner component
     }
   };
 

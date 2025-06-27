@@ -179,9 +179,14 @@ export function DashboardOverview({ accounts, transactions }) {
                   <Tooltip
                     formatter={(value) => `$${value.toFixed(2)}`}
                     contentStyle={{
-                      backgroundColor: "hsl(var(--popover))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "var(--radius)",
+                      backgroundColor: "#5d2137",
+                      border: "1px solid #374151",
+                      borderRadius: "8px",
+                      color: "white !important",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                    }}
+                    labelStyle={{
+                      color: "white !important",
                     }}
                   />
                   <Legend />
